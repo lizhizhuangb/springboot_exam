@@ -39,6 +39,15 @@ public class KnowledgeFrameController {
         List<KnowledgeFrame> knowledgeFrameList = new ArrayList<>();
         for (String s : knowledgeFrames) {
             String[] str = s.split(",");
+            /**
+             *         this.chapterId = chapterId;
+             *         this.chapterParentId = chapterParentId;
+             *         this.content = content;
+             *         this.isKnowledge = isKnowledge;
+             *         this.subjectId = subjectId;
+             *
+             *         第一个参数解析为章节id、第二个参数解析为章节父id、第三个章节名、第四个是否为知识点、第五个对应学科
+             */
             knowledgeFrameList.add(new KnowledgeFrame("null".equals(str[0]) ? null : Integer.parseInt(str[0]), Integer.parseInt(str[1]), str[2],
                     Boolean.parseBoolean(str[3]) ? 1 : 0,
                     Integer.parseInt(str[4])));

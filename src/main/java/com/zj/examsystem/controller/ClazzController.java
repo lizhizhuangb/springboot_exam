@@ -21,30 +21,35 @@ public class ClazzController {
     @Resource
     private ClazzService clazzService;
 
+    //查询所有班级
     @GetMapping("/findAll")
     @ResponseBody
     public BaseResponseEntity<IPage<Clazz>> findAll(Integer pageno, Integer size) {
         return BaseResponseEntity.ok("", clazzService.findAll(pageno, size));
     }
 
+    //通过id查询
     @GetMapping("/findById")
     @ResponseBody
     public BaseResponseEntity<Clazz> findById(Integer clazzId) {
         return BaseResponseEntity.ok("", clazzService.findById(clazzId));
     }
 
+    //获取专业班级等信息
     @GetMapping("/loadMajorClazzCascader")
     @ResponseBody
     public BaseResponseEntity<List<Map<String, Object>>> loadMajorClazzCascader() {
         return BaseResponseEntity.ok("", clazzService.findMajorAndClazzList());
     }
 
+    //通过专业id查班级
     @GetMapping("/loadClazzByMajorId")
     @ResponseBody
     public BaseResponseEntity<List<Clazz>> loadClazzByMajorId(Integer majorId) {
         return BaseResponseEntity.ok("", clazzService.loadClazzByMajorId(majorId));
     }
 
+    //保存班级信息
     @PostMapping("/save")
     @ResponseBody
     public BaseResponseEntity<Integer> save(Clazz clazz, String status) {
@@ -52,6 +57,7 @@ public class ClazzController {
         return result != 0 ? BaseResponseEntity.ok(status + "成功", result) : BaseResponseEntity.error(ResponseCode.FAIL, status + "失败");
     }
 
+    //删除班级信息
     @PostMapping("/delete")
     @ResponseBody
     public BaseResponseEntity<Integer> delete(Integer[] clazzId) {

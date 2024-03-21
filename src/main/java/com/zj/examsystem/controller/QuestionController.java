@@ -63,13 +63,23 @@ public class QuestionController {
 
     @GetMapping("/intelligentGenerate")
     @ResponseBody
+    //传入五个参数：学科id、预设题目数量、预设试卷难度、难度权重、知识点权重
+    /**
+     * subjectId 学科id
+     * presetQuestionTotal 预设题目数量
+     * presetTestDifficulty 预设试卷难度
+     * difficultyWeight 难度权重
+     * knowledgeWeight 知识点权重
+     */
     public BaseResponseEntity<List<Question>> intelligentGenerate(Integer subjectId, Integer presetQuestionTotal, Float presetTestDifficulty,
                                                                   Float difficultyWeight,
                                                                   Float knowledgeWeight) {
         List<Question> questionList = questionService.findQuestionBySubjectId(subjectId);
-        // 1. 初始化种群
+        // 1. 初始化种群 生成INITIAL_POPULATION_SIZE张试卷
+        // INITIAL_POPULATION_SIZE张试卷的列表
         List<List<Question>> initialPopulation = new ArrayList<>();
         for (int i = 0; i < INITIAL_POPULATION_SIZE; i++) {
+            //试卷
             List<Question> chromosome = new ArrayList<>();
             for (int j = 0; j < presetQuestionTotal; j++) {
                 int rand = new Random().nextInt(questionList.size());
@@ -78,8 +88,10 @@ public class QuestionController {
                     rand = new Random().nextInt(questionList.size());
                     question = questionList.get(rand);
                 }
+                //向试卷中添加试题
                 chromosome.add(question);
             }
+            //向种群中添加试卷
             initialPopulation.add(chromosome);
         }
         return BaseResponseEntity.ok("生成成功", questionService.intelligentGenerate(initialPopulation,

@@ -98,6 +98,7 @@ public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question> i
         return questionList;
     }
 
+    //把list中所有题目的难度相加，然后除以试题总数量，得到试题平均难度
     @Override
     public Double calculateActualDifficulty(Integer[] questionIds) {
         Double difficulty = 0.0;
@@ -111,6 +112,7 @@ public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question> i
     public Double computeFitness(List<Question> questionList, Float knowledgeWeight, Float examDifficulty,
                                  Float difficultyWeight) {
         // 2-1 计算该套试卷的知识点覆盖率
+        //新建一个列表，将试卷所有的知识点的id添加到该列表中，且仅当该列表中不包含
         List<Integer> knowledgeList = new ArrayList<>();
         for (Question question : questionList) {
             if (!knowledgeList.contains(question.getKnowledgeId())) {
@@ -127,18 +129,22 @@ public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question> i
         Double actualDifficulty = difficulty / questionList.size();
 
         // = 1 - (1 - knowledgeCoverage) * knowledgeWeight - |examDifficulty - actualDifficulty| * difficultyWeight
+        // 适应度函数： 1-（未覆盖率*权重+难度偏差*权重）
         return 1 - (1 - knowledgeCoverage) * knowledgeWeight - Math.abs(examDifficulty - actualDifficulty) * difficultyWeight;
     }
 
     private Integer getFittestIndex(List<Double> fitnessList) {
         int res = 0;
+        // 定义一个double类型的变量，赋值为double的最小值
         Double fittest = Double.MIN_VALUE;
+        //比较fitness的值，将其索引赋值给res
         for (int i = 0; i < fitnessList.size(); i++) {
             if (fitnessList.get(i) > fittest) {
                 fittest = fitnessList.get(i);
                 res = i;
             }
         }
+        //返回res
         return res;
     }
 
@@ -147,7 +153,9 @@ public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question> i
         List<Double> probabilityList = new ArrayList<>();
         List<Double> accumulationList = new ArrayList<>();
         for (Double fitness : fitnessList) {
+            // 适应度除以总适应度得到一个概率
             Double probability = fitness / fitnessSum;
+            // 将这个概率添加到概率列表中
             probabilityList.add(probability);
             accumulationList.add(computeAccumulation(probabilityList));
         }
@@ -155,6 +163,7 @@ public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question> i
         // 3-2 采用轮盘赌策略选择m个个体
         List<List<Question>> children = new ArrayList<>();
         for (int i = 0; i < INITIAL_POPULATION_SIZE; i++) {
+            //nextDouble() 是 Random 类的一个方法，用于生成一个双精度浮点数，其值在0.0（包含）到1.0（不包含）之间。
             Double random = new Random().nextDouble();
             Integer index = selectByCompareAccumulationList(accumulationList, random);
             if (index != accumulationList.size()) {
@@ -167,10 +176,12 @@ public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question> i
         // 3-3 去除集合中重复的元素
         LinkedHashSet<List<Question>> set = new LinkedHashSet<>(children);
         children.clear();
+        //set 是一个 LinkedHashSet，它不会包含重复的元素，并且保留了原始的元素插入顺序。
         children.addAll(set);
         return children;
     }
 
+    // 计算累积概率
     private Double computeAccumulation(List<Double> probabilityList) {
         Double res = 0.0;
         for (Double probability : probabilityList) {
@@ -179,6 +190,7 @@ public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question> i
         return res;
     }
 
+    //生成的随机数小于概率列表的某一位，则返回这个位置的索引
     private Integer selectByCompareAccumulationList(List<Double> accumulationList, Double random) {
         for (int i = 0; i < accumulationList.size(); i++) {
             if (random <= accumulationList.get(i)) {
@@ -205,6 +217,7 @@ public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question> i
         double random = new Random().nextDouble();
         if (random < PROBABILITY_CROSSOVER) {
             // 4-3 随机选择一个交叉点位置
+            // 交换该点位置以后的所有基因
             int crossoverPoint = new Random().nextInt(individual1.size());
             // 4-4 互换交叉点后的基因
             List<Question> newIndividual1 = new ArrayList<>();
@@ -227,12 +240,14 @@ public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question> i
         return ret;
     }
 
+    //如果存在重复元素后执行的方法
     private List<Question> checkDuplication(List<Question> individual) {
         List<Question> ret = new ArrayList<>();
         for (Question question : individual) {
             if (!ret.contains(question)) {
                 ret.add(question);
             } else { // 替换同配置题目
+                //再数据库寻找相同难度和知识点的题目
                 List<Question> sameConfigureQuestionList =
                         questionMapper.selectSameWithDifficultyAndTypeAndKnowledge(question.getQuestionId(), question.getQuestionDifficulty(),
                                 question.getQuestionDifficulty() - 0.2F
@@ -246,6 +261,7 @@ public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question> i
                         }
                     }
                 } else {
+                    //遍历相同类型和知识点的题目
                     sameConfigureQuestionList =
                             questionMapper.selectSameWithTypeAndKnowledge(question.getQuestionId(), question.getQuestionDifficulty(),
                                     question.getTypeId(), question.getKnowledgeId());
@@ -261,6 +277,13 @@ public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question> i
         return ret;
     }
 
+    /**
+     * 对每一位都进行for循环
+     * 生成一个0-1的随机数，与突变概率进行比较，如果小于这个突变概率，进行突变操作
+     * 从数据库搜索相同困难和知识点的题目进行替换
+     * @param questionList
+     * @return
+     */
     private List<Question> mutationGenerate(List<Question> questionList) {
         for (int i = 0; i < questionList.size(); i++) {
             // 5-2 决定该基因位是否发生突变
