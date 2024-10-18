@@ -15,6 +15,8 @@ import org.springframework.util.StringUtils;
 import java.util.ArrayList;
 import java.util.List;
 
+
+//检验用户类别权限
 @Service
 @SuppressWarnings("all")
 public class CustomUserDetailsService implements UserDetailsService {
@@ -23,10 +25,12 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String account) throws UsernameNotFoundException {
+        // account---account    identity---role_id
         String[] str = account.split(" ");
         Integer identity = Integer.valueOf(str[0]);
         account = str[1];
         List<GrantedAuthority> authList = new ArrayList<>();
+        //检查是否包含内容
         if (StringUtils.hasText(account)) {
             QueryWrapper<User> queryWrapper = new QueryWrapper<>();
             queryWrapper.eq("account", account);

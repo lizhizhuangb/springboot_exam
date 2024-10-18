@@ -16,6 +16,7 @@ import java.util.Map;
 public class JwtUtils {
     private static final Logger logger = LoggerFactory.getLogger(JwtUtils.class);
 
+    //密钥
     @Value("${examsystem.app.jwtSecret}")
     private String jwtSecret;
 
@@ -24,7 +25,9 @@ public class JwtUtils {
     private int jwtExpirationMs;
 
     public String generateJwtToken(Authentication authentication, Integer identity) {
+        //获取当前登录用户的对象
         User userPrincipal = (User) authentication.getPrincipal();
+        //claims 是一个包含了 JWT 所需的任何自定义声明的 Map 对象，用于在 JWT 中存储一些自定义的键值对信息。
         Map<String, Object> claims = new HashMap<>();
         claims.put("identity", identity);
 
@@ -40,14 +43,17 @@ public class JwtUtils {
                 .compact();
     }
 
+    //从jwt中获取用户名
     public String getUserNameFromJwtToken(String token) {
         return Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(token).getBody().getSubject();
     }
 
+    //从jwt中获取role_id
     public Object getIdentityFromJwtToken(String token) {
         return Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(token).getBody().get("identity");
     }
 
+    //校验jwt令牌是否有效
     public boolean validateJwtToken(String authToken) {
         try {
             Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(authToken);

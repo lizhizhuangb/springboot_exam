@@ -6,7 +6,7 @@ from collections import defaultdict
 
 import jieba
 from gensim import corpora, models, similarities
-
+# 用于分割文本数据的分隔符
 TEXT_DELIMITER = "|"
 
 

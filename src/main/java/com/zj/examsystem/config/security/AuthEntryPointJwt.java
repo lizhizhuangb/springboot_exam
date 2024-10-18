@@ -21,6 +21,7 @@ public class AuthEntryPointJwt implements AuthenticationEntryPoint {
         String errMsg = authException.getMessage();
         logger.error("Unauthorized error: {}", errMsg);
 
+        //设置状态码为未经授权
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.setCharacterEncoding("UTF-8");
         response.setContentType("application/json");
@@ -28,8 +29,8 @@ public class AuthEntryPointJwt implements AuthenticationEntryPoint {
         if ("Bad credentials".equals(errMsg)) {
             errMsg = "密码错误，请重试";
         }
-        PrintWriter printWriter = response.getWriter();
-        printWriter.print(errMsg);
+        PrintWriter printWriter = response.getWriter();//获取 HttpServletResponse 对象的 Writer 流
+        printWriter.print(errMsg);//在输出流中写入错误消息
         printWriter.flush();
         printWriter.close();
     }

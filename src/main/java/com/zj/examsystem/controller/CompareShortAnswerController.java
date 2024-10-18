@@ -19,6 +19,7 @@ public class CompareShortAnswerController {
 
     @GetMapping("/loadCompareTextData")
     @ResponseBody
+    //这个方法用于加载比较文本数据，接受三个参数：pageno（页码）、size（每页大小）、testId（测试ID），返回一个包含分页比较文本数据的BaseResponseEntity对象。
     public BaseResponseEntity<IPage<CompareShortAnswer>> loadCompareTextData(Integer pageno, Integer size, Integer testId) {
         return BaseResponseEntity.ok("", compareShortAnswerService.loadCompareTextData(pageno, size, testId));
     }

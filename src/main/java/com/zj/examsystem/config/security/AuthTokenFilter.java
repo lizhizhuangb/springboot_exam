@@ -16,20 +16,24 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-
+//处理身份验证的过滤器  在每个http请求中执行一次过滤操作
 public class AuthTokenFilter extends OncePerRequestFilter {
+    //处理jwt的工具类，解析、验证、生成jwt
     @Autowired
     private JwtUtils jwtUtils;
 
+    //自定义的用户详情服务
     @Autowired
     private CustomUserDetailsService userDetailsService;
 
+    //静态的日志记录器
     private static final Logger logger = LoggerFactory.getLogger(AuthTokenFilter.class);
 
     @Override
     protected void doFilterInternal(@NotNull HttpServletRequest request, @NotNull HttpServletResponse response, @NotNull FilterChain filterChain)
             throws ServletException, IOException {
         try {
+            //从请求中获取jwt
             String jwt = parseJwt(request);
             if (jwt != null && jwtUtils.validateJwtToken(jwt)) {
                 // 从jwt中拿到username
